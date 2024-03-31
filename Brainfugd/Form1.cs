@@ -17,7 +17,7 @@ namespace Brainfugd
         public Form1()
         {
             InitializeComponent();
-            //WindowState = FormWindowState.Maximized;
+            WindowState = FormWindowState.Maximized;
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -176,7 +176,7 @@ namespace Brainfugd
                         break;
                     case "Output":
                         lbl_OutputNumber.Text = MemoriesValue[selectedMemory].ToString();
-                        lbl_OutputLetters.Text += "A";
+                        lbl_OutputLetters.Text += (char)(MemoriesValue[selectedMemory] + 64);
                         break;
                     case "StartLoop":
                         break;
