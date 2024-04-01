@@ -43,64 +43,76 @@ namespace Brainfugd
         }
 
         int selectedCell = 0;
-        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        private async void Form1_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.KeyCode == Keys.Right && CellsType[selectedCell] == "End")
+            if (!ProgramRunning)
             {
-                Cells[selectedCell].Top += 10;
-                selectedCell = 0;
-                Cells[selectedCell].Top -= 10;
+                if (e.KeyCode == Keys.Right && CellsType[selectedCell] == "End")
+                {
+                    Cells[selectedCell].Top += 10;
+                    selectedCell = 0;
+                    Cells[selectedCell].Top -= 10;
+                }
+                else if (e.KeyCode == Keys.Right && selectedCell < Cells.Count - 1)
+                {
+                    NextCell();
+                }
+                if (e.KeyCode == Keys.Left && selectedCell > 0)
+                {
+                    PreviousCell();
+                }
+                if (selectedCell != 0)
+                {
+                    if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Back)
+                    {
+                        Cells[selectedCell].BackColor = Color.White;
+                        CellsType[selectedCell] = "Empty";
+                    }
+                    if (e.KeyCode == Keys.Oemplus)
+                    {
+                        Cells[selectedCell].BackColor = Color.Blue;
+                        CellsType[selectedCell] = "Plus";
+                    }
+                    if (e.KeyCode == Keys.OemMinus)
+                    {
+                        Cells[selectedCell].BackColor = Color.Yellow;
+                        CellsType[selectedCell] = "Minus";
+                    }
+                    if (e.KeyCode == Keys.Oemcomma)
+                    {
+                        Cells[selectedCell].BackColor = Color.Orange;
+                        CellsType[selectedCell] = "Input";
+                    }
+                    if (e.KeyCode == Keys.OemPeriod)
+                    {
+                        Cells[selectedCell].BackColor = Color.Cyan;
+                        CellsType[selectedCell] = "Output";
+                    }
+                    if (e.KeyCode == Keys.E)
+                    {
+                        Cells[selectedCell].BackColor = Color.Purple;
+                        CellsType[selectedCell] = "End";
+                    }
+                }
+                if (e.KeyCode == Keys.Enter && selectedCell == 0)
+                {
+                    RunProgram();
+                }
             }
-            else if (e.KeyCode == Keys.Right && selectedCell < Cells.Count - 1)
+            
+            if(e.KeyCode == Keys.Escape && ProgramRunning)
             {
-                NextCell();
-            }
-            if (e.KeyCode == Keys.Left && selectedCell > 0)
-            {
-                PreviousCell();
-            }
-            if (selectedCell != 0)
-            {
-                if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Back)
-                {
-                    Cells[selectedCell].BackColor = Color.White;
-                    CellsType[selectedCell] = "Empty";
-                }
-                if (e.KeyCode == Keys.Oemplus)
-                {
-                    Cells[selectedCell].BackColor = Color.Blue;
-                    CellsType[selectedCell] = "Plus";
-                }
-                if (e.KeyCode == Keys.OemMinus)
-                {
-                    Cells[selectedCell].BackColor = Color.Yellow;
-                    CellsType[selectedCell] = "Minus";
-                }
-                if (e.KeyCode == Keys.Oemcomma)
-                {
-                    Cells[selectedCell].BackColor = Color.Orange;
-                    CellsType[selectedCell] = "Input";
-                }
-                if (e.KeyCode == Keys.OemPeriod)
-                {
-                    Cells[selectedCell].BackColor = Color.Cyan;
-                    CellsType[selectedCell] = "Output";
-                }
-                if (e.KeyCode == Keys.E)
-                {
-                    Cells[selectedCell].BackColor = Color.Purple;
-                    CellsType[selectedCell] = "End";
-                }
-            }
-            if(e.KeyCode == Keys.Enter && selectedCell == 0)
-            {
-                RunProgram();
+                List<string> a = new List<string>(CellsType);
+                CellsType.Clear();
+                await Task.Delay(200);
+                CellsType = new List<string>(a);
             }
         }
 
+        bool ProgramRunning = false;
         private void Form1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (selectedCell != 0)
+            if (selectedCell != 0 && !ProgramRunning)
             {
                 if (e.KeyChar == '<')
                 {
@@ -127,6 +139,7 @@ namespace Brainfugd
 
         private async void RunProgram()
         {
+            ProgramRunning = true;
             lbl_OutputLetters.Text = "";
             lbl_OutputNumber.Text = "";
             Label[] Memories = new Label[5];
@@ -143,7 +156,7 @@ namespace Brainfugd
             int[] MemoriesValue = {0, 0, 0, 0, 0};
             int selectedMemory = 0;
             Memories[0].BackColor = Color.White;
-            for(int i = 1; i < Cells.Count; i++)
+            for(int i = 1; i < CellsType.Count; i++)
             {
                 switch (CellsType[i])
                 {
@@ -201,6 +214,7 @@ namespace Brainfugd
                 NextCell();
                 await Task.Delay(50);
             }
+            ProgramRunning = false;
         }
 
         private void NextCell()
