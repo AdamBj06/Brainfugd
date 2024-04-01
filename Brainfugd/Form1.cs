@@ -42,59 +42,104 @@ namespace Brainfugd
             }
         }
 
-        int selectedCell = 0;
+        int selectedCell_Index = 0;
         private async void Form1_KeyDown(object sender, KeyEventArgs e)
         {
             if (!ProgramRunning)
             {
-                if (e.KeyCode == Keys.Right && CellsType[selectedCell] == "End")
+                if(e.KeyCode == Keys.Right)
                 {
-                    Cells[selectedCell].Top += 10;
-                    selectedCell = 0;
-                    Cells[selectedCell].Top -= 10;
+                    if (CellsType[selectedCell_Index] == "End")
+                    {
+                        Cells[selectedCell_Index].Top += 10;
+                        selectedCell_Index = 0;
+                        Cells[selectedCell_Index].Top -= 10;
+                        if(Cells[0].Left <= 55)
+                        {
+                            int n = -Cells[0].Left + 55;
+                            foreach (PictureBox pcb in Cells)
+                            {
+                                pcb.Left += n;
+                            }
+                        }
+                    }
+                    else if (Cells[selectedCell_Index].Right + 55 >= Width && selectedCell_Index < Cells.Count - 2)
+                    {
+                        foreach (PictureBox pcb in Cells)
+                        {
+                            pcb.Left -= 55;
+                        }
+                        NextCell();
+                    }
+                    else if (selectedCell_Index < Cells.Count - 2)
+                    {
+                        NextCell();
+                    }
+                    else
+                    {
+                        foreach (PictureBox pcb in Cells)
+                        {
+                            pcb.Left -= 55;
+                        }
+                        PictureBox p = new PictureBox()
+                        {
+                            Name = "pcb" + Cells.Count,
+                            Location = new Point(Cells[Cells.Count - 1].Location.X + 55, Cells[Cells.Count - 1].Location.Y),
+                            Size = new Size(50, 50),
+                            BackColor = Color.White,
+                        };
+                        Controls.Add(p);
+                        Cells.Add(p);
+                        CellsType.Add("Empty");
+                        NextCell();
+                    }
                 }
-                else if (e.KeyCode == Keys.Right && selectedCell < Cells.Count - 1)
+                if (e.KeyCode == Keys.Left && Cells[selectedCell_Index].Location.X <= 55 && selectedCell_Index > 0)
                 {
-                    NextCell();
+                    foreach (PictureBox pcb in Cells)
+                    {
+                        pcb.Left += 55;
+                    }
+                    PreviousCell();
                 }
-                if (e.KeyCode == Keys.Left && selectedCell > 0)
+                else if (e.KeyCode == Keys.Left && selectedCell_Index > 0)
                 {
                     PreviousCell();
                 }
-                if (selectedCell != 0)
+                if (selectedCell_Index != 0)
                 {
                     if (e.KeyCode == Keys.Space || e.KeyCode == Keys.Back)
                     {
-                        Cells[selectedCell].BackColor = Color.White;
-                        CellsType[selectedCell] = "Empty";
+                        Cells[selectedCell_Index].BackColor = Color.White;
+                        CellsType[selectedCell_Index] = "Empty";
                     }
                     if (e.KeyCode == Keys.Oemplus)
                     {
-                        Cells[selectedCell].BackColor = Color.Blue;
-                        CellsType[selectedCell] = "Plus";
+                        Cells[selectedCell_Index].BackColor = Color.Blue;
+                        CellsType[selectedCell_Index] = "Plus";
                     }
                     if (e.KeyCode == Keys.OemMinus)
                     {
-                        Cells[selectedCell].BackColor = Color.Yellow;
-                        CellsType[selectedCell] = "Minus";
+                        Cells[selectedCell_Index].BackColor = Color.Yellow;
+                        CellsType[selectedCell_Index] = "Minus";
                     }
                     if (e.KeyCode == Keys.Oemcomma)
                     {
-                        Cells[selectedCell].BackColor = Color.Orange;
-                        CellsType[selectedCell] = "Input";
+                        Cells[selectedCell_Index].BackColor = Color.Orange;
+                        CellsType[selectedCell_Index] = "Input";
                     }
                     if (e.KeyCode == Keys.OemPeriod)
                     {
-                        Cells[selectedCell].BackColor = Color.Cyan;
-                        CellsType[selectedCell] = "Output";
+                        Cells[selectedCell_Index].BackColor = Color.Cyan;
+                        CellsType[selectedCell_Index] = "Output";
                     }
                     if (e.KeyCode == Keys.E)
                     {
-                        Cells[selectedCell].BackColor = Color.Purple;
-                        CellsType[selectedCell] = "End";
+                        Cells[selectedCell_Index].BackColor = Color.Purple;
+                        CellsType[selectedCell_Index] = "End";
                     }
                 }
-                if (e.KeyCode == Keys.Enter && selectedCell == 0)
+                if (e.KeyCode == Keys.Enter && selectedCell_Index == 0)
                 {
                     RunProgram();
                 }
@@ -112,27 +157,27 @@ namespace Brainfugd
         bool ProgramRunning = false;
         private void Form1_KeyPress(object sender, KeyPressEventArgs e)
         {
-            if (selectedCell != 0 && !ProgramRunning)
+            if (selectedCell_Index != 0 && !ProgramRunning)
             {
                 if (e.KeyChar == '<')
                 {
-                    Cells[selectedCell].BackColor = Color.Green;
-                    CellsType[selectedCell] = "Previous";
+                    Cells[selectedCell_Index].BackColor = Color.Green;
+                    CellsType[selectedCell_Index] = "Previous";
                 }
                 if (e.KeyChar == '>')
                 {
-                    Cells[selectedCell].BackColor = Color.Red;
-                    CellsType[selectedCell] = "Next";
+                    Cells[selectedCell_Index].BackColor = Color.Red;
+                    CellsType[selectedCell_Index] = "Next";
                 }
                 if (e.KeyChar == '[')
                 {
-                    Cells[selectedCell].BackColor = Color.Black;
-                    CellsType[selectedCell] = "StartLoop";
+                    Cells[selectedCell_Index].BackColor = Color.Black;
+                    CellsType[selectedCell_Index] = "StartLoop";
                 }
                 if (e.KeyChar == ']')
                 {
-                    Cells[selectedCell].BackColor = Color.DarkGray;
-                    CellsType[selectedCell] = "EndLoop";
+                    Cells[selectedCell_Index].BackColor = Color.DarkGray;
+                    CellsType[selectedCell_Index] = "EndLoop";
                 }
             }
         }
@@ -196,7 +241,7 @@ namespace Brainfugd
                     case "EndLoop":
                         if (MemoriesValue[selectedMemory] != 0)
                         {
-                            while (CellsType[selectedCell] != "StartLoop")
+                            while (CellsType[selectedCell_Index] != "StartLoop")
                             {
                                 PreviousCell();
                                 i--;
@@ -219,15 +264,15 @@ namespace Brainfugd
 
         private void NextCell()
         {
-            Cells[selectedCell].Top += 10;
-            selectedCell++;
-            Cells[selectedCell].Top -= 10;
+            Cells[selectedCell_Index].Top += 10;
+            selectedCell_Index++;
+            Cells[selectedCell_Index].Top -= 10;
         }
         private void PreviousCell()
         {
-            Cells[selectedCell].Top += 10;
-            selectedCell--;
-            Cells[selectedCell].Top -= 10;
+            Cells[selectedCell_Index].Top += 10;
+            selectedCell_Index--;
+            Cells[selectedCell_Index].Top -= 10;
         }
     }
 }
